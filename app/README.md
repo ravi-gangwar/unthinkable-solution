@@ -1,8 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Recipe Discovery App
+
+A full-stack recipe discovery application built with Next.js and Express.js, featuring AI-powered ingredient recognition, recipe suggestions, and user favorites.
+
+## Features
+
+- 🔍 **Recipe Search & Discovery** - Search recipes by name or browse all available recipes
+- 🥗 **Smart Ingredient Selection** - Choose ingredients by category to get recipe suggestions  
+- 📸 **AI Photo Recognition** - Upload vegetable photos to automatically detect ingredients using Google Gemini AI
+- ❤️ **Favorites System** - Save and manage your favorite recipes (requires authentication)
+- 🎨 **Beautiful Dark Theme** - Modern midnight mist theme with glassmorphism effects
+- 📱 **Mobile Responsive** - Fully responsive design that works on all devices
+- 🔐 **User Authentication** - Secure login/signup with JWT tokens
+
+## Environment Setup
+
+Before running the application, you need to configure environment variables:
+
+1. **Copy the environment template:**
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. **Configure your environment variables in `.env.local`:**
+   ```env
+   # Backend API URL (change for production deployment)
+   NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+   
+   # Google Gemini AI API Key (required for photo ingredient recognition)
+   NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+3. **Get your Gemini API Key:**
+   - Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Create a new API key
+   - Replace `your_gemini_api_key_here` with your actual API key
 
 ## Getting Started
 
-First, run the development server:
+### Frontend (Next.js)
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Run the development server:**
 
 ```bash
 npm run dev
