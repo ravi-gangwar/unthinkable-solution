@@ -3,12 +3,11 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
 export function useAuthAction() {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const router = useRouter()
   const pathname = usePathname()
 
   const executeWithAuth = (action: () => void | Promise<void>) => {

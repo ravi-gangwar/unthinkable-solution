@@ -193,7 +193,7 @@ export default function HomePage() {
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-2">Ingredients Detected Successfully!</h3>
                     <p className="text-gray-300">
-                      We've found {detectedIngredients.length} ingredients in your photo. Check the Suggestions tab to see them and find recipes!
+                      We&apos;ve found {detectedIngredients.length} ingredients in your photo. Check the Suggestions tab to see them and find recipes!
                     </p>
                   </div>
                   <Button

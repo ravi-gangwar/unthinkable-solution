@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -142,9 +143,11 @@ export default function PhotoIngredientSearch({ onIngredientsDetected }: PhotoIn
           <CardContent className="space-y-4">
             {previewUrl && (
               <div className="relative">
-                <img
+                <Image
                   src={previewUrl}
                   alt="Uploaded ingredient photo"
+                  width={400}
+                  height={256}
                   className="w-full max-h-64 object-cover rounded-lg"
                 />
                 {isAnalyzing && (
