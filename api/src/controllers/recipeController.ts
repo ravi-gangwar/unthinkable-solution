@@ -137,25 +137,15 @@ export class RecipeController {
 
             const userIngredientNames = ingredientNames.rows.map(row => row.name.toLowerCase());
             
-            // Build recipe matching query
-            let query = `
-                SELECT *, 
-                (
-                    SELECT COUNT(*) 
-                    FROM unnest(string_to_array(LOWER(ingredients), ',')) AS recipe_ingredient
-                    WHERE TRIM(recipe_ingredient) = ANY($1::text[])
-                ) as matching_ingredients_count,
-                array_length(string_to_array(ingredients, ','), 1) as total_ingredients_count
-                FROM recipes WHERE 1=1
-            `;
-            
+            // Build recipe matching query with subquery
+            let baseConditions = `WHERE 1=1`;
             const queryParams: any[] = [userIngredientNames];
             let paramIndex = 2;
 
             // Filter by dietary restrictions
             if (dietaryRestrictions.length > 0) {
                 const conditions = dietaryRestrictions.map((tag: string) => `dietary_tags ILIKE $${paramIndex++}`);
-                query += ` AND (dietary_tags = '' OR ${conditions.join(' OR ')})`;
+                baseConditions += ` AND (dietary_tags = '' OR ${conditions.join(' OR ')})`;
                 dietaryRestrictions.forEach((tag: string) => {
                     queryParams.push(`%${tag}%`);
                 });
@@ -163,38 +153,47 @@ export class RecipeController {
 
             // Add cooking time filter
             if (maxCookingTime) {
-                query += ` AND cooking_time <= $${paramIndex}`;
+                baseConditions += ` AND cooking_time <= $${paramIndex}`;
                 queryParams.push(maxCookingTime);
                 paramIndex++;
             }
 
             // Add difficulty filter
             if (difficulty) {
-                query += ` AND difficulty = $${paramIndex}`;
+                baseConditions += ` AND difficulty = $${paramIndex}`;
                 queryParams.push(difficulty);
                 paramIndex++;
             }
 
-            // Calculate match percentage and order by it
-            query += `
-                ORDER BY 
+            const query = `
+                SELECT *, 
+                    matching_ingredients_count,
+                    total_ingredients_count,
                     CASE 
                         WHEN total_ingredients_count > 0 THEN 
                             (matching_ingredients_count::decimal / total_ingredients_count::decimal) * 100 
                         ELSE 0 
-                    END DESC,
-                    cooking_time ASC
+                    END as match_percentage
+                FROM (
+                    SELECT *, 
+                    (
+                        SELECT COUNT(*) 
+                        FROM unnest(string_to_array(LOWER(ingredients), ',')) AS recipe_ingredient
+                        WHERE TRIM(recipe_ingredient) = ANY($1::text[])
+                    ) as matching_ingredients_count,
+                    array_length(string_to_array(ingredients, ','), 1) as total_ingredients_count
+                    FROM recipes ${baseConditions}
+                ) as recipe_data
+                ORDER BY match_percentage DESC, cooking_time ASC
                 LIMIT 20
             `;
 
             const result = await client.query(query, queryParams);
 
-            // Add match percentage to results
+            // Process results and add serving size adjustment
             const recipesWithMatchPercentage = result.rows.map(recipe => ({
                 ...recipe,
-                match_percentage: recipe.total_ingredients_count > 0 
-                    ? Math.round((recipe.matching_ingredients_count / recipe.total_ingredients_count) * 100)
-                    : 0,
+                match_percentage: Math.round(recipe.match_percentage),
                 // Adjust serving size if requested
                 adjusted_serving_size: servingSize || recipe.serving_size || 4
             }));
